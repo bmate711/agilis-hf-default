@@ -4,6 +4,7 @@ agilisHF - A small API for managing dog recipes.
 
 from datetime import datetime
 import os
+from .import_dogs import import_data
 
 from pymongo.collection import Collection, ReturnDocument
 
@@ -48,3 +49,9 @@ def new_dog():
     dog.id = PydanticObjectId(str(insert_result.inserted_id))
     print(dog)
     return dog.to_json()
+
+@app.route("/import", methods=["POST"])
+def import_dogs():
+    raw_dog_list = request.get_json()
+    import_data(raw_dog_list, data)
+    return jsonify(True)
