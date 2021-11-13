@@ -28,8 +28,15 @@ def get_details(search_conditions: dict, pymongo_db: Database):
     validate_search_conditons(search_conditions)
     search_values = {}
     for key, value in search_conditions.items():
-        if value is not None:
+        if key == "vaccinated":
+            search_values["vaccination"] = (
+                {"$exists": True, "$ne": []}
+                if value == True
+                else {"$exists": True, "$eq": []}
+            )
+        elif value is not None:
             search_values[key] = value
+
     # search by attributes
     dogs = dogs.find(search_values)
     result_dogs = []
@@ -55,22 +62,22 @@ valid_search_keys = ["name", "breed", "age", "color", "sex", "vaccinated", "sear
 
 
 def validate_search_conditons(search_conditions: dict):
-    for key, value in search_conditions.items():
+    for key in search_conditions.keys():
         if key not in valid_search_keys:
             raise SearchKeyError("Invalid key in search conditons")
     if "name" in search_conditions:
-        if search_conditions["name"] is not str:
+        if type(search_conditions["name"]) is not str:
             raise ValidationError("Name value must be a valid string")
     if "breed" in search_conditions:
-        if search_conditions["breed"] is not str:
+        if type(search_conditions["breed"]) is not str:
             raise ValidationError("Breed value must be a valid string")
     if "color" in search_conditions:
-        if search_conditions["color"] is not str:
+        if type(search_conditions["color"]) is not str:
             raise ValidationError("Color value must be a valid string")
     if "age" in search_conditions:
-        if search_conditions["age"] is not int:
+        if type(search_conditions["age"]) is not int:
             raise ValidationError("Age value must be an integer")
     if "sex" in search_conditions:
-        if search_conditions["sex"] is not bool:
+        if type(search_conditions["sex"]) is not bool:
             raise ValidationError("Sex value must be a bool value")
     return
