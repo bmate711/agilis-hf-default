@@ -13,7 +13,7 @@ from flask_pymongo import PyMongo
 from pymongo.errors import DuplicateKeyError
 from fastapi.encoders import jsonable_encoder
 
-from agilisHF.controllers import get_details
+from agilisHF.controllers import SearchKeyError, get_details
 
 
 from .model import Dog
@@ -45,7 +45,15 @@ def resource_not_found(e):
     return jsonify(error=f"Duplicate key error."), 400
 
 
-@app.route("/", methods=["POST"])
+@app.errorhandler(SearchKeyError)
+def resource_not_found(e):
+    """
+    An error-handler to ensure that MongoDB duplicate key errors are returned as JSON.
+    """
+    return jsonify(error=str(e)), 400
+
+
+@app.route("/dogs", methods=["POST"])
 def new_dog():
     raw_dog = request.get_json()
     dog = Dog(**raw_dog)
@@ -55,7 +63,7 @@ def new_dog():
     return dog.to_json()
 
 
-@app.route("/dogs", methods=["GET"])
+@app.route("/dogs/detail", methods=["POST"])
 def get_dogs():
     search_params = request.get_json()
     dogs = get_details(search_params, pymongo.db)

@@ -1,4 +1,5 @@
 from os import name
+from flask.json import jsonify
 from flask_pymongo.wrappers import Database
 
 from agilisHF.model import Dog
@@ -9,30 +10,67 @@ from agilisHF.model import Dog
 #   "vaccinated": boolean
 #   "color": string
 #   "sex": boolean
+#   "search_str": string,
+#   "breed": string
 # }
+
+
+class SearchKeyError(KeyError):
+    pass
+
+
+class ValidationError(Exception):
+    pass
 
 
 def get_details(search_conditions: dict, pymongo_db: Database):
     dogs = pymongo_db.dogs
+    validate_search_conditons(search_conditions)
+    search_values = {}
+    for key, value in search_conditions.items():
+        if value is not None:
+            search_values[key] = value
     # search by attributes
-    dog: Dog = dogs.find_one(
-        {
-            "name": search_conditions["name"],
-            "age": search_conditions["age"],
-            "vaccinated": search_conditions["vaccinated"],
-            "color": search_conditions["color"],
-            "sex": search_conditions["sex"],
-        }
-    )
-
-    if dog is None:
+    dogs = dogs.find(search_values)
+    result_dogs = []
+    if dogs is None:
+        if "search_str" not in search_conditions.keys():
+            return {}
         search_dogs = dogs.find()
-        result_dogs = []
         # search by search string
         for dog in search_dogs:
-            if (dog.description.find(search_conditions["search_str"]) > -1) or (
-                dog.name.find(search_conditions["search_str"]) > -1
+            if (
+                (dog["description"].find(search_conditions["search_str"]) > -1)
+                or (dog["name"].find(search_conditions["search_str"]) > -1)
+                or (dog["breed"].find(search_conditions["search_str"]) > -1)
             ):
-                result_dogs.append(dog.to_json())
-        return result_dogs
-    return dog.to_json()
+                result_dogs.append(Dog(**dog).to_json())
+        return jsonify(dogs=result_dogs)
+    for dog in dogs:
+        result_dogs.append(Dog(**dog).to_json())
+    return jsonify(dogs=result_dogs)
+
+
+valid_search_keys = ["name", "breed", "age", "color", "sex", "vaccinated", "search_str"]
+
+
+def validate_search_conditons(search_conditions: dict):
+    for key, value in search_conditions.items():
+        if key not in valid_search_keys:
+            raise SearchKeyError("Invalid key in search conditons")
+    if "name" in search_conditions:
+        if search_conditions["name"] is not str:
+            raise ValidationError("Name value must be a valid string")
+    if "breed" in search_conditions:
+        if search_conditions["breed"] is not str:
+            raise ValidationError("Breed value must be a valid string")
+    if "color" in search_conditions:
+        if search_conditions["color"] is not str:
+            raise ValidationError("Color value must be a valid string")
+    if "age" in search_conditions:
+        if search_conditions["age"] is not int:
+            raise ValidationError("Age value must be an integer")
+    if "sex" in search_conditions:
+        if search_conditions["sex"] is not bool:
+            raise ValidationError("Sex value must be a bool value")
+    return
