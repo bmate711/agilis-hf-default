@@ -11,6 +11,10 @@ import flask
 from flask import Flask, request, url_for, jsonify
 from flask_pymongo import PyMongo
 from pymongo.errors import DuplicateKeyError
+from fastapi.encoders import jsonable_encoder
+
+from agilisHF.controllers import get_details
+
 
 from .model import Dog
 from .objectid import PydanticObjectId
@@ -22,7 +26,7 @@ pymongo = PyMongo(app)
 print(os.getenv("MONGO_URI"))
 # Get a reference to the recipes collection.
 # Uses a type-hint, so that your IDE knows what's happening!
-data: Collection = pymongo.db.data
+data: Collection = pymongo.db.dogs
 
 
 @app.errorhandler(404)
@@ -40,6 +44,7 @@ def resource_not_found(e):
     """
     return jsonify(error=f"Duplicate key error."), 400
 
+
 @app.route("/", methods=["POST"])
 def new_dog():
     raw_dog = request.get_json()
@@ -48,3 +53,10 @@ def new_dog():
     dog.id = PydanticObjectId(str(insert_result.inserted_id))
     print(dog)
     return dog.to_json()
+
+
+@app.route("/dogs", methods=["GET"])
+def get_dogs():
+    search_params = request.get_json()
+    dogs = get_details(search_params, pymongo.db)
+    return dogs
