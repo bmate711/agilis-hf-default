@@ -1,18 +1,25 @@
-.DEFAULT_GOAL := help
+all:
+	@echo "dev     - Install development dependencies"
+	@echo "test    - Run tests"
+	@echo "clean   - Delete generated files"
+	@echo "dist    - Build distribution artifacts"
+	@echo "release - Build distribution and release to PyPI."
 
+test:
+	python -m pytest
 
-### QUICK
-# ¯¯¯¯¯¯¯
+clean:
+	rm -rf build dist src/*.egg-info .tox .pytest_cache pip-wheel-metadata .DS_Store
+	find src -name '__pycache__' | xargs rm -rf
+	find tests -name '__pycache__' | xargs rm -rf
 
-install: server.install ## Install
+dev:
+	python -m pip install -e .[dev]
 
-daemon: server.daemon ## Start
+install:
+	python -m pip install -e .
 
-stop: server.stop ## Stop
+run:
+	FLASK_DEBUG=true FLASK_APP=agilisHF flask run
 
-
-include makefiles/server.mk
-include makefiles/test.mk
-include makefiles/database.mk
-include makefiles/format.mk
-include makefiles/help.mk
+.PHONY: all install clean dev
