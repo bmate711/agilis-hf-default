@@ -5,16 +5,6 @@ from flask_pymongo.wrappers import Database
 
 from agilisHF.model import Dog
 
-# Search conditions
-# { "name": string
-#   "age": number,
-#   "vaccinated": boolean
-#   "color": string
-#   "sex": boolean
-#   "search_str": string,
-#   "breed": string
-# }
-
 
 class SearchKeyError(KeyError):
     pass
@@ -24,6 +14,15 @@ class ValidationError(Exception):
     pass
 
 
+# Search conditions
+# { "name": string
+#   "age": number,
+#   "vaccinated": boolean
+#   "color": string
+#   "sex": boolean
+#   "search_str": string,
+#   "breed": string
+# }
 def get_details_by_search(search_conditions: dict, pymongo_db: Database):
     dogs = pymongo_db.dogs
     validate_search_conditons(search_conditions)
@@ -77,12 +76,23 @@ def validate_search_conditons(search_conditions: dict):
     if "name" in search_conditions:
         if type(search_conditions["name"]) is not str:
             raise ValidationError("Name value must be a valid string")
+        if len(search_conditions["name"]) < 1:
+            raise ValidationError("Name sring length should be min 1")
     if "breed" in search_conditions:
         if type(search_conditions["breed"]) is not str:
             raise ValidationError("Breed value must be a valid string")
+        if len(search_conditions["breed"]) < 1:
+            raise ValidationError("Name sring length should be min 1")
     if "color" in search_conditions:
         if type(search_conditions["color"]) is not str:
             raise ValidationError("Color value must be a valid string")
+        if len(search_conditions["color"]) < 1:
+            raise ValidationError("Name sring length should be min 1")
+    if "search_str" in search_conditions:
+        if type(search_conditions["search_str"]) is not str:
+            raise ValidationError("Search string value must be a valid string")
+        if len(search_conditions["search_str"]) < 1:
+            raise ValidationError("Search sring length should be min 1")
     if "age" in search_conditions:
         if type(search_conditions["age"]) is not int:
             raise ValidationError("Age value must be an integer")
