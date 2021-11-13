@@ -13,7 +13,12 @@ from flask_pymongo import PyMongo
 from pymongo.errors import DuplicateKeyError
 from fastapi.encoders import jsonable_encoder
 
-from agilisHF.controllers import SearchKeyError, ValidationError, get_details
+from agilisHF.controllers import (
+    SearchKeyError,
+    ValidationError,
+    get_details_by_id,
+    get_details_by_search,
+)
 
 
 from .model import Dog
@@ -68,5 +73,12 @@ def new_dog():
 @app.route("/dogs/detail", methods=["POST"])
 def get_dogs():
     search_params = request.get_json()
-    dogs = get_details(search_params, pymongo.db)
+    dogs = get_details_by_search(search_params, pymongo.db)
+    return dogs
+
+
+@app.route("/dogs/detail/", methods=["GET"])
+def get_dog_by_id():
+    id = request.args.get("id")
+    dogs = get_details_by_id(id, pymongo.db)
     return dogs

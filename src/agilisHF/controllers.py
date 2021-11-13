@@ -1,4 +1,5 @@
 from os import name
+from bson.objectid import ObjectId
 from flask.json import jsonify
 from flask_pymongo.wrappers import Database
 
@@ -23,7 +24,7 @@ class ValidationError(Exception):
     pass
 
 
-def get_details(search_conditions: dict, pymongo_db: Database):
+def get_details_by_search(search_conditions: dict, pymongo_db: Database):
     dogs = pymongo_db.dogs
     validate_search_conditons(search_conditions)
     search_values = {}
@@ -56,6 +57,14 @@ def get_details(search_conditions: dict, pymongo_db: Database):
     for dog in dogs:
         result_dogs.append(Dog(**dog).to_json())
     return jsonify(dogs=result_dogs)
+
+
+def get_details_by_id(id: str, pymongo_db: Database):
+    dogs = pymongo_db.dogs
+    dog = dogs.find_one({"_id": ObjectId(id)})
+    if dog is not None:
+        return Dog(**dog).to_json()
+    return {}
 
 
 valid_search_keys = ["name", "breed", "age", "color", "sex", "vaccinated", "search_str"]
