@@ -23,7 +23,6 @@ def save_dogs(dogs, db):
 
 # A kutya neve nem tartalmazhatja a 'cat' szót
 # Ha a kutya fiú 'M' kell kezdődni a neve
-# A kutyának minden évben 2 oltást kellet kapnia
 # Ha a kutya 5 évnél idősebb, rendelkezni kell 'cuteness' oltással
 # Ha a kutya keverék, akkor szerepelnie kell a nevében 'Snow' szónak
 # A leírás 50-100 karakte hosszú lehet
@@ -55,7 +54,6 @@ def validate_name(raw):
     name = raw["name"]
     sex = raw["sex"]
     breed = raw["breed"]
-    print(type(name))
     if type(name) is not str:
         raise ValidationError("Name value must be a valid string")
     if "cat" in name:
@@ -66,6 +64,7 @@ def validate_name(raw):
     if breed == "mixed":
         if "Snow" not in name:
              raise ValidationError("Name should contain 'Snow'")
+
 def validate_breed(raw):
     breed = raw["breed"]
     if type(breed) is not str:

@@ -23,7 +23,7 @@ pymongo = PyMongo(app)
 print(os.getenv("MONGO_URI"))
 # Get a reference to the recipes collection.
 # Uses a type-hint, so that your IDE knows what's happening!
-data: Collection = pymongo.db.data
+data: Collection = pymongo.db.dog
 
 
 @app.errorhandler(404)
