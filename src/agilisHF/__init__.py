@@ -14,6 +14,7 @@ from flask_pymongo import PyMongo
 from pymongo.errors import DuplicateKeyError
 from fastapi.encoders import jsonable_encoder
 
+from .import_dogs import import_data
 from agilisHF.controllers import (
     SearchKeyError,
     ValidationError,
@@ -32,7 +33,7 @@ pymongo = PyMongo(app)
 print(os.getenv("MONGO_URI"))
 # Get a reference to the recipes collection.
 # Uses a type-hint, so that your IDE knows what's happening!
-data: Collection = pymongo.db.dogs
+data: Collection = pymongo.db.dog
 
 
 @app.errorhandler(404)
@@ -70,6 +71,11 @@ def new_dog():
     print(dog)
     return dog.to_json()
 
+@app.route("/import", methods=["POST"])
+def import_dogs():
+    raw_dog_list = request.get_json()
+    import_data(raw_dog_list, data)
+    return jsonify(True)
 
 @app.route("/dogs/detail", methods=["POST"])
 def get_dogs():
