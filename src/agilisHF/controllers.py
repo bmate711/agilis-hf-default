@@ -29,6 +29,8 @@ def get_details_by_search(search_conditions: dict, pymongo_db: Database) -> List
     validate_search_conditons(search_conditions)
     search_values = {}
     for key, value in search_conditions.items():
+        if key == "search_str":
+            pass
         if key == "vaccinated":
             search_values["vaccination"] = (
                 {"$exists": True, "$ne": []}
@@ -39,9 +41,9 @@ def get_details_by_search(search_conditions: dict, pymongo_db: Database) -> List
             search_values[key] = value
 
     # search by attributes
-    dogs = dogs.find(search_values)
+    result = dogs.find(search_values)
     result_dogs = []
-    if dogs is None:
+    if result.count() == 0 and len(search_values.keys()) != 0:
         if "search_str" not in search_conditions.keys():
             return []
         search_dogs = dogs.find()
@@ -53,8 +55,8 @@ def get_details_by_search(search_conditions: dict, pymongo_db: Database) -> List
                 or (dog["breed"].find(search_conditions["search_str"]) > -1)
             ):
                 result_dogs.append(Dog(**dog))
-                return result_dogs
-    for dog in dogs:
+        return result_dogs
+    for dog in result:
         result_dogs.append(Dog(**dog))
     return result_dogs
 
@@ -71,6 +73,8 @@ valid_search_keys = ["name", "breed", "age", "color", "sex", "vaccinated", "sear
 
 
 def validate_search_conditons(search_conditions: dict):
+    if search_conditions is None:
+        raise ValidationError("Search conditons should be a dictionary")
     for key in search_conditions.keys():
         if key not in valid_search_keys:
             raise SearchKeyError("Invalid key in search conditons")
