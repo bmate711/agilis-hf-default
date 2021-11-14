@@ -27,6 +27,7 @@ setup(
         "Flask-PyMongo==2.3.0",
         "pymongo[srv] == 3.11.3",
         "pydantic == 1.8.1",
+        "mongomock == 3.1.0",
     ],
     extras_require=EXTRAS_REQUIRE,
 )

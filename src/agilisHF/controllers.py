@@ -1,4 +1,5 @@
 from os import name
+from typing import List
 from bson.objectid import ObjectId
 from flask.json import jsonify
 from flask_pymongo.wrappers import Database
@@ -23,7 +24,7 @@ class ValidationError(Exception):
 #   "search_str": string,
 #   "breed": string
 # }
-def get_details_by_search(search_conditions: dict, pymongo_db: Database):
+def get_details_by_search(search_conditions: dict, pymongo_db: Database) -> List[Dog]:
     dogs = pymongo_db.dogs
     validate_search_conditons(search_conditions)
     search_values = {}
@@ -42,7 +43,7 @@ def get_details_by_search(search_conditions: dict, pymongo_db: Database):
     result_dogs = []
     if dogs is None:
         if "search_str" not in search_conditions.keys():
-            return {}
+            return []
         search_dogs = dogs.find()
         # search by search string
         for dog in search_dogs:
@@ -51,11 +52,11 @@ def get_details_by_search(search_conditions: dict, pymongo_db: Database):
                 or (dog["name"].find(search_conditions["search_str"]) > -1)
                 or (dog["breed"].find(search_conditions["search_str"]) > -1)
             ):
-                result_dogs.append(Dog(**dog).to_json())
-        return jsonify(dogs=result_dogs)
+                result_dogs.append(Dog(**dog))
+                return result_dogs
     for dog in dogs:
-        result_dogs.append(Dog(**dog).to_json())
-    return jsonify(dogs=result_dogs)
+        result_dogs.append(Dog(**dog))
+    return result_dogs
 
 
 def get_details_by_id(id: str, pymongo_db: Database):

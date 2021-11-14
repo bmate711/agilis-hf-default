@@ -4,6 +4,7 @@ agilisHF - A small API for managing dog recipes.
 
 from datetime import datetime
 import os
+from unittest import result
 
 from pymongo.collection import Collection, ReturnDocument
 
@@ -73,8 +74,11 @@ def new_dog():
 @app.route("/dogs/detail", methods=["POST"])
 def get_dogs():
     search_params = request.get_json()
-    dogs = get_details_by_search(search_params, pymongo.db)
-    return dogs
+    result_jsons = []
+    res = get_details_by_search(search_params, pymongo.db)
+    for dog in res:
+        result_jsons.append(dog.to_json())
+    return jsonify(dogs=result_jsons)
 
 
 @app.route("/dogs/detail/", methods=["GET"])
