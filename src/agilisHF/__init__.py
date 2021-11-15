@@ -13,6 +13,7 @@ from flask import Flask, request, url_for, jsonify
 from flask_pymongo import PyMongo
 from pymongo.errors import DuplicateKeyError
 from fastapi.encoders import jsonable_encoder
+from src.agilisHF.model import User
 
 from .import_dogs import import_data
 from agilisHF.controllers import (
@@ -35,6 +36,7 @@ print(os.getenv("MONGO_URI"))
 # Uses a type-hint, so that your IDE knows what's happening!
 data: Collection = pymongo.db.dog
 
+data2: Collection = pymongo.db.user
 
 @app.errorhandler(404)
 def resource_not_found(e):
@@ -92,3 +94,13 @@ def get_dog_by_id():
     id = request.args.get("id")
     dogs = get_details_by_id(id, pymongo.db)
     return dogs
+
+
+@app.route("/users", methods=["POST"])
+def new_user():
+    raw_user = request.get_json()
+    user = User(**raw_user)
+    insert_result = data2.insert_one(user.to_bson())
+    user.id = PydanticObjectId(str(insert_result.inserted_id))
+    print(user)
+    return user.to_json()
